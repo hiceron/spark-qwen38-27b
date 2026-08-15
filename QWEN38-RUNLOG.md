@@ -100,6 +100,18 @@ Same `spark-vllm:qwen38` image. `/v1/completions`, temp 0, `(n-1)/(wall-ttft)`, 
 
 Did **not** need their util 0.90, `FLASHINFER_CUDA_ARCH_LIST=12.1a`, or `eugr/spark-vllm-b12x:nightly-20260813`. The 32 is MTP-3 + decode-only completions, thinking off.
 
-Wesche `verify.sh`-style 400-token thinking-off chat (TTFT-inclusive): k=2 **19.1** · k=3 **17.2**. Their 23.7 is a long xhigh-thinking SSE artifact — not this probe. Not replayed.
+Wesche `verify.sh`-style 400-token thinking-off chat (TTFT-inclusive): k=2 **19.1** · k=3 **17.2**.
 
-Box left on **MTP k=3 U=0.74** after the replay (KV 5.73× @262k).
+### Replay — Wesche thinking-ON long stream (the number that would actually matter)
+
+23.7 with thinking on is ~25% above our ~18 house number. I undersold that.
+
+Replay on this box, MTP k=3 U=0.74, xhigh, temp 0.6, streamed chat, 4096-token cap, coding prompt:
+
+- **17.2 tok/s** wall and decode (4096 tok / 238.6 s)
+- All 4096 stayed in reasoning (`content_chars=0`)
+- No 25% jump at 4k
+
+His 75k / 53 min job and `vllm/vllm-openai:nightly` are still untested here.
+
+Box left on **MTP k=3 U=0.74** (KV 5.73× @262k).

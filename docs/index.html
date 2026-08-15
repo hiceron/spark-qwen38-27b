@@ -233,8 +233,8 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
   </div>
 </div>
 <div class="wrap">
-  <p>32 is not fake. It is also not the job. Hermes, agents, and coding here run with thinking on. That path is <strong>~18 tok/s</strong> today. Getting that number above 20 is the remaining work — SGLang + DSpark is the published candidate, still unmeasured on this box with thinking on.</p>
-  <p>Wesche's 23.7 is closer: long streamed chat, thinking on. I have not replayed that 75k-token run. His short thinking-off probe on this box was 17–19, TTFT-inclusive.</p>
+  <p>32 is not fake. It is also not the job. Hermes, agents, and coding here run with thinking on. That path is <strong>~18 tok/s</strong> on a short streaming bench.</p>
+  <p>Wesche's <strong>23.7 with thinking on</strong> is the number I should have chased first — that is a ~25% jump if it holds. I replayed a 4096-token thinking-on coding stream on this box (xhigh, temp 0.6, MTP k=3): <strong>17.2 tok/s</strong>, entire budget in reasoning, no content yet. I did <em>not</em> get 23.7. Still open: his uncapped 75k run and <code>vllm/vllm-openai:nightly</code>.</p>
 
   <h2><span class="num">A</span>Whose shoulders</h2>
 </div>
@@ -246,7 +246,7 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
     <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000">MiaAI</a></div><div class="what"><code>triton_attn</code> as the GB10 path that actually serves FP8 KV.</div></div>
     <div class="credit"><div class="who"><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk</a></div><div class="what">First public 3.8 DSpark. Their card is SGLang + official FP8. I tried the drafter on this stack and it did not boot.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">Published the completions bench that produces 32. I reproduced it. Credit for the method — that is not our daily claim.</div></div>
-    <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">Quant ladder, thinking-effort ops, and the honest 23.7 long-chat number. I replayed the 400-token probe, not the 75k-token run.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">23.7 tok/s with thinking on — the first published number that would actually change daily use. I replayed 4k think-on and got 17.2. His 75k run is still open.</div></div>
   </div>
 </div>
 </main>

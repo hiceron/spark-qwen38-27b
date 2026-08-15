@@ -93,8 +93,9 @@ That is not Hermes. That is not agents. I do not use it.
 
 **Usable, thinking on, streaming chat:** 17.9–18.4 (k=2) · 18.2–19.6 (k=3).
 
-Pushing *that* number above 20 is the remaining work. SGLang + DSpark is the
-published candidate. Still unmeasured here with thinking on.
+Wesche's **23.7 thinking-on** would be the real win (~25% up). I replayed a
+4096-token xhigh coding stream on this box: **17.2 tok/s**, all reasoning.
+Not reproduced. His 75k run and official nightly image are still open.
 
 ---
 

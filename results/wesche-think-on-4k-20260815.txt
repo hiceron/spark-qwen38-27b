@@ -1,0 +1,14 @@
+# Wesche-style thinking-ON long stream — 2026-08-15
+# Boot: spark-vllm:qwen38  MTP k=3  U=0.74  triton_attn
+# Prompt: one-shot rogue-like coding task
+# thinking on, reasoning_effort=xhigh, temp 0.6, max_tokens=4096
+# Method: streamed chat, completion_tokens / wall  (same basis as 75k/53min)
+completion_tokens=4096
+wall_s=238.6
+ttft_s=0.314
+tok_s_wall=17.2
+tok_s_decode=17.2
+reasoning_chars=16539
+content_chars=0
+# Entire budget stayed in thinking. No 25% jump vs the short house bench (~18).
+# Wesche 23.7 not reproduced at 4k. Still untested: 75k uncapped, vllm-openai:nightly.
