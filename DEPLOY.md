@@ -36,7 +36,7 @@ SPEC_K=3 ./scripts/boot-unsloth38-27b.sh 0.55 4 auto 262144
 
 ## keys MTP-3 recipe (not yet my daily)
 
-Published at [drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark). Replayed on this box at **U=0.74** (not their 0.90): MTP k=3 → **32.1 tok/s** on their decode-only completions bench. The 32 is the measuring tool + k=3, not their pinned b12x image. **Do not run 0.90** next to voice or ComfyUI.
+Published at [drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark). Their 32 is thinking-off `/v1/completions`. I reproduced 32.1. **House does not use that number** — thinking stays on, and that path is ~18 tok/s. Do not run their util 0.90 next to voice or ComfyUI.
 
 ## Wesche ladder
 

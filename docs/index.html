@@ -145,7 +145,7 @@
       <li>Raising <code>gpu-memory-utilization</code> 0.55 → 0.74 is the working KV lever. NVFP4-KV is blocked by the same <code>triton_attn</code> backend that makes FP8 KV work on GB10.</li>
       <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> is real. On Unsloth NVFP4 + vLLM it dies in <code>get_draft_quant_config</code>. Their card is SGLang + official FP8.</li>
       <li>Nobody has published a z-lab <code>Qwen3.8-27B-DFlash</code>.</li>
-      <li>keys' 32 tok/s is real on this box: <strong>32.1</strong> with their decode-only completions bench at MTP k=3. My 18 is streaming chat with thinking on. Both are true.</li>
+      <li>The house number is thinking <strong>on</strong>: <strong>17.9–19.6 tok/s</strong> streaming chat. 32 tok/s is a thinking-off completions bench. I reproduced it. I do not use it. This model without thinking is not the model we bought.</li>
     </ul>
   </div>
 
@@ -215,28 +215,26 @@ is not valid for this configuration. Reason: ['kv_cache_dtype not supported']</c
 ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
   <p>Passing <code>--hf-overrides '{}'</code> on the target does not fix the draft <code>ModelConfig</code>. No tok/s — it never served a token. There is no <code>z-lab/Qwen3.8-27B-DFlash</code>; the question is already on the <a href="https://huggingface.co/Qwen/Qwen3.8-27B/discussions/54">official card</a>.</p>
 
-  <h2><span class="num">04</span>keys' 32 tok/s — reproduced. It is the bench, not a secret flag.</h2>
-  <p>I ran their public method on this box: <code>/v1/completions</code>, temp 0, <code>(n-1)/(wall-ttft)</code>, 512-token generation, median of 5. Same house image. Util 0.74, not their 0.90.</p>
+  <h2><span class="num">04</span>32 tok/s is a tweet bench. The usable number is ~18.</h2>
+  <p>House rule: thinking stays on. Without it this 27B is the wrong model. I will not quote a thinking-off completions score as daily speed.</p>
+  <p>I still ran keys' public method so I would know what 32 actually is: <code>/v1/completions</code>, temp 0, thinking off, decode-only (TTFT thrown away), 512-token gen. Same house image, util 0.74.</p>
 </div>
 <div class="bleed">
   <div class="tablewrap">
     <table>
-      <caption>keys decode-only bench · this GB10 · spark-vllm:qwen38</caption>
-      <thead><tr><th>MTP</th><th>keys published</th><th>This box</th></tr></thead>
+      <caption>what I will quote vs what the tweet measures</caption>
+      <thead><tr><th></th><th>tok/s</th><th>Use it?</th></tr></thead>
       <tbody>
-        <tr><td>k=2</td><td>26.3</td><td class="win">26.4</td></tr>
-        <tr><td>k=3</td><td>31.7</td><td class="win">32.1</td></tr>
+        <tr><td>Streaming chat, thinking on, MTP k=2</td><td class="win">17.9 / 18.4</td><td class="win">yes — house</td></tr>
+        <tr><td>Streaming chat, thinking on, MTP k=3</td><td>18.2 / 19.6</td><td>spare</td></tr>
+        <tr><td>keys completions bench, thinking off, k=3</td><td>32.1</td><td class="bad">no — benchmax</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 <div class="wrap">
-  <p>I did not need <code>eugr/spark-vllm-b12x:nightly-20260813</code>, <code>FLASHINFER_CUDA_ARCH_LIST=12.1a</code>, or util 0.90. MTP-3 plus decode-only completions is the whole win. My 17.9–18.4 is still the number that matches how Hermes chats — streaming, thinking on, short generations.</p>
-  <p>Wesche's 23.7 is a long xhigh-thinking SSE artifact. I only replayed his 400-token thinking-off probe: <strong>19.1</strong> tok/s at k=2 and <strong>17.2</strong> at k=3 (TTFT-inclusive). I have not rerun the 75k-token creative task.</p>
-  <div class="note">
-    <span class="lbl">House ceiling</span>
-    <p>keys' README uses <code>--gpu-memory-utilization 0.90</code>. I did not. 0.74 already reproduced 32.1. Do not run 0.90 next to voice or ComfyUI.</p>
-  </div>
+  <p>32 is not fake. It is also not the job. Hermes, agents, and coding here run with thinking on. That path is <strong>~18 tok/s</strong> today. Getting that number above 20 is the remaining work — SGLang + DSpark is the published candidate, still unmeasured on this box with thinking on.</p>
+  <p>Wesche's 23.7 is closer: long streamed chat, thinking on. I have not replayed that 75k-token run. His short thinking-off probe on this box was 17–19, TTFT-inclusive.</p>
 
   <h2><span class="num">A</span>Whose shoulders</h2>
 </div>
@@ -247,7 +245,7 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
     <div class="credit"><div class="who"><a href="https://github.com/eugr/spark-vllm-docker">eugr</a></div><div class="what">The GB10 vLLM image. House daily adds ffmpeg on top.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000">MiaAI</a></div><div class="what"><code>triton_attn</code> as the GB10 path that actually serves FP8 KV.</div></div>
     <div class="credit"><div class="who"><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk</a></div><div class="what">First public 3.8 DSpark. Their card is SGLang + official FP8. I tried the drafter on this stack and it did not boot.</div></div>
-    <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">MTP-3 champion recipe and the completions bench. I replayed it: 32.1 on this box. Credit for publishing the method.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">Published the completions bench that produces 32. I reproduced it. Credit for the method — that is not our daily claim.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">Quant ladder, thinking-effort ops, and the honest 23.7 long-chat number. I replayed the 400-token probe, not the 75k-token run.</div></div>
   </div>
 </div>

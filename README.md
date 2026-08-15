@@ -27,8 +27,8 @@ Work done with Grok (xAI) and Rem, my personal AI agent.
 | **[eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker)** | The GB10 vLLM image. House daily is a one-line ffmpeg fork of it |
 | **[MiaAI](https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000)** | `--attention-backend triton_attn` as the GB10 path that serves FP8 KV |
 | **[RadixArk/Qwen3.8-27B-DSpark](https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark)** | First public 3.8 DSpark drafter (SGLang + official FP8). I tried it on Unsloth NVFP4 + vLLM; it did not boot |
-| **[keys / drowzeys](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark)** | MTP-3 champion recipe, 31.7 tok/s on their bench. I am replaying it — their number is theirs until I measure |
-| **[Wesche](https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder)** | Quant ladder + 23.7 tok/s from a long streamed chat. Same: credit, then replay |
+| **[keys / drowzeys](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark)** | MTP-3 completions bench (thinking off). I reproduced 32.1. That is not the house number |
+| **[Wesche](https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder)** | Quant ladder + a long thinking-on chat figure. Closer to real use than keys |
 
 Where my numbers differ from theirs, that is tool / prompt / thinking / image —
 not a claim that they are wrong.
@@ -83,20 +83,18 @@ On Unsloth NVFP4 + vLLM 0.27.2 the engine starts loading both weights, then dies
 in `get_draft_quant_config` (`hf_overrides` is `None` on the draft `ModelConfig`).
 No tok/s from me — it never served a token. There is no `z-lab/Qwen3.8-27B-DFlash`.
 
-### 4. keys' 32 tok/s is real — it is a different measuring tool, not a different kernel
+### 4. The house number is thinking-on ~18. 32 is a bench I will not quote as daily
 
-I replayed [keys/drowzeys](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark)
-`/v1/completions` bench on this box, same house image, no 0.90 util:
+Thinking stays on. Without it this model is the wrong 27B.
 
-| | MTP k=2 | MTP k=3 |
-|---|---|---|
-| keys published | 26.3 | 31.7 |
-| **this box, their method** | **26.4** | **32.1** |
+I replayed keys' completions bench (temp 0, thinking off, decode-only) so I would
+know what 32 is. I got **26.4** at k=2 and **32.1** at k=3 — their method, this box.
+That is not Hermes. That is not agents. I do not use it.
 
-The 32 is **MTP-3 + decode-only completions at temp 0**. My 18 is streaming **chat** with
-thinking on. Both are true. I did not need their pinned `spark-vllm-b12x` image or
-`FLASHINFER_CUDA_ARCH_LIST`. Wesche's 23.7 is a long thinking-on SSE run — I only
-replayed his 400-token thinking-off probe (19.1 at k=2, 17.2 at k=3).
+**Usable, thinking on, streaming chat:** 17.9–18.4 (k=2) · 18.2–19.6 (k=3).
+
+Pushing *that* number above 20 is the remaining work. SGLang + DSpark is the
+published candidate. Still unmeasured here with thinking on.
 
 ---
 
