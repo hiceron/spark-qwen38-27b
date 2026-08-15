@@ -1,0 +1,8 @@
+# --kv-cache-dtype nvfp4 — FAIL — 2026-08-15
+# Flag exists in vLLM 0.27.2. APIServer accepts it.
+# EngineCore:
+#   ValueError: Selected backend AttentionBackendEnum.TRITON_ATTN
+#   is not valid for this configuration. Reason: ['kv_cache_dtype not supported']
+# On GB10, FP8 KV requires triton_attn (FA2 cannot serve FP8).
+# So NVFP4-KV and TurboQuant-KV are blocked on the same backend that
+# makes FP8 KV work. Raising gpu-memory-utilization is the working KV lever.

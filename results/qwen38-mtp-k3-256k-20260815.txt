@@ -1,0 +1,12 @@
+# Qwen3.8-27B-NVFP4 — MTP k=3 — 256k — 2026-08-15
+# Same image/weights/flags as mtp-k2 except num_speculative_tokens=3
+# KV log: 32.22 GiB available, 909449 tokens, Maximum concurrency @262144 = 3.47x
+# First real completion: 12.26s wall, content in reasoning (message.content None)
+# Bench: streaming concurrency_bench.py
+
+model=unsloth27b mode=decode prompt_tokens~short max_tokens=256 reps=2
+conc | wall_s | prefill tok/s | decode tok/s | TTFT mean | TTFT p95 | ok
+   1 |   14.1 |             6 |         18.2 |      0.26 |     0.26 | 1/1
+   1 |   13.1 |             6 |         19.6 |      0.15 |     0.15 | 1/1
+   4 |   16.8 |            19 |         60.8 |      2.56 |     2.56 | 4/4
+   4 |   14.9 |            21 |         68.9 |      0.57 |     0.58 | 4/4

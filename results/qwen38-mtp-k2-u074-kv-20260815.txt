@@ -1,0 +1,5 @@
+# MTP k=2 U=0.74 N=4 256k — KV measure 2026-08-15
+# spark-vllm:qwen38  kv=auto (fp8_e4m3fn)  batched=32768
+GPU KV cache size: 1,549,032 tokens
+Maximum concurrency for 262,144 tokens per request: 5.91x
+# Compare U=0.55: 3.51–3.79x. Util is the working KV lever.

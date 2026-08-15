@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Qwen3.8-27B-NVFP4 on one DGX Spark — native MTP k=2 at 18 tok/s streaming, 5.91× of 262k KV. The grafts that were supposed to be faster, weren't.">
+<meta name="author" content="Dawid (@Hiceron2)">
+<meta property="og:title" content="Qwen3.8-27B-NVFP4 on one Spark — native MTP won, the grafts did not">
+<meta property="og:description" content="Day-one measurements on a GB10: 17.9–18.4 tok/s streaming, 5.91× KV at util 0.74. DFlash graft slower. DSpark did not boot.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hiceron.github.io/spark-qwen38-27b/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@Hiceron2">
+<title>Qwen3.8-27B-NVFP4 on one Spark — native MTP won, the grafts did not</title>
+<style>
+  :root{
+    --ground:#FBFBFC; --panel:#F1F3F7; --panel-2:#E7EAF1; --rule:#DBE0E9;
+    --ink:#12161B; --ink-2:#3D4756; --muted:#5C6675;
+    --amber:#B0761F; --blue:#4372D6; --crit:#B3332C; --good:#2E7D4F;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --measure:68ch;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--ground:#12161B; --panel:#1A1F26; --panel-2:#222932; --rule:#2C3540;
+      --ink:#E3E8EF; --ink-2:#BAC4D2; --muted:#8794A6;
+      --amber:#C6862B; --blue:#5B8DEF; --crit:#D9544D; --good:#4CAF7A}
+  }
+  :root[data-theme="dark"]{--ground:#12161B; --panel:#1A1F26; --panel-2:#222932; --rule:#2C3540;
+    --ink:#E3E8EF; --ink-2:#BAC4D2; --muted:#8794A6;
+    --amber:#C6862B; --blue:#5B8DEF; --crit:#D9544D; --good:#4CAF7A}
+  :root[data-theme="light"]{--ground:#FBFBFC; --panel:#F1F3F7; --panel-2:#E7EAF1; --rule:#DBE0E9;
+    --ink:#12161B; --ink-2:#3D4756; --muted:#5C6675;
+    --amber:#B0761F; --blue:#4372D6; --crit:#B3332C; --good:#2E7D4F}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:0 24px}
+  .bleed{max-width:1080px; margin:0 auto; padding:0 24px}
+  header{border-bottom:1px solid var(--rule); padding:56px 0 36px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 18px}
+  h1{font-family:var(--mono); font-weight:600; font-size:clamp(27px,4.2vw,42px); line-height:1.16; letter-spacing:-.02em; text-wrap:balance; margin:0 0 18px}
+  h1 em{font-style:normal; color:var(--amber)}
+  .standfirst{font-size:19px; color:var(--ink-2); margin:0; text-wrap:pretty}
+  .byline{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin-top:24px; display:flex; flex-wrap:wrap; gap:8px 18px}
+  h2{font-family:var(--mono); font-size:22px; font-weight:600; letter-spacing:-.01em; margin:58px 0 8px; text-wrap:balance; scroll-margin-top:64px}
+  h2 .num{color:var(--amber); margin-right:10px}
+  h3{font-family:var(--mono); font-size:16px; font-weight:600; margin:34px 0 6px}
+  p{margin:0 0 18px; text-wrap:pretty}
+  a{color:var(--ink); text-decoration:underline; text-decoration-color:var(--amber); text-underline-offset:3px}
+  a:hover{color:var(--amber)}
+  a:focus-visible{outline:2px solid var(--amber); outline-offset:3px; border-radius:2px}
+  strong{font-weight:650}
+  .lede{font-size:18.5px; color:var(--ink-2)}
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:2px; margin:0 0 12px}
+  .tile{background:var(--panel); padding:18px 20px; border-top:2px solid var(--rule)}
+  .tile.win{border-top-color:var(--good)} .tile.warn{border-top-color:var(--amber)} .tile.bad{border-top-color:var(--crit)}
+  .tile .k{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
+  .tile .v{font-family:var(--mono); font-size:25px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums; margin:0}
+  .tile .v.bad{color:var(--crit)} .tile .v.win{color:var(--good)}
+  .tile .s{font-size:13.5px; color:var(--muted); margin:6px 0 0; line-height:1.45}
+  .quick{background:var(--panel); padding:22px 24px; margin:0 0 26px}
+  .quick .lbl{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); display:block; margin-bottom:12px}
+  .quick ul{margin:0; padding:0; list-style:none; display:grid; gap:9px}
+  .quick li{padding-left:20px; position:relative; font-size:15.5px; color:var(--ink-2)}
+  .quick li::before{content:"→"; position:absolute; left:0; color:var(--amber); font-family:var(--mono)}
+  .quick li strong{color:var(--ink)}
+  pre{background:var(--panel); border-left:2px solid var(--amber); padding:16px 18px; overflow-x:auto; margin:0 0 20px; font-family:var(--mono); font-size:13px; line-height:1.6; color:var(--ink-2)}
+  pre.err{border-left-color:var(--crit)}
+  code{font-family:var(--mono); font-size:.88em; background:var(--panel); padding:1px 5px; border-radius:3px}
+  pre code{background:none; padding:0; font-size:inherit}
+  .tablewrap{overflow-x:auto; margin:0 0 22px; background:var(--panel)}
+  table{border-collapse:collapse; width:100%; font-size:14px; min-width:480px}
+  caption{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); text-align:left; padding:14px 18px 0}
+  th,td{padding:9px 16px; text-align:right; border-bottom:1px solid var(--rule); font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left; font-family:var(--mono); font-size:13px}
+  thead th{font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:500; border-bottom:1px solid var(--ink-2)}
+  tbody tr:last-child td{border-bottom:none}
+  td.win{color:var(--good); font-weight:650} td.bad{color:var(--crit); font-weight:650} td.hi{color:var(--amber); font-weight:650}
+  .note{background:var(--panel-2); padding:18px 20px; margin:0 0 22px; font-size:15px; color:var(--ink-2)}
+  .note.warn{border-left:2px solid var(--crit)}
+  .note p:last-child{margin-bottom:0}
+  .note .lbl{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:7px}
+  .credits{display:grid; gap:2px; margin:0 0 22px}
+  .credit{background:var(--panel); padding:16px 20px; display:grid; grid-template-columns:170px 1fr; gap:6px 20px}
+  .credit .who{font-family:var(--mono); font-size:13.5px; font-weight:600}
+  .credit .what{font-size:14.5px; color:var(--ink-2)}
+  @media (max-width:620px){ .credit{grid-template-columns:1fr} }
+  footer{border-top:1px solid var(--rule); margin-top:72px; padding:32px 0 64px; color:var(--muted); font-size:14px}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+  .themebtn{position:fixed; top:14px; right:14px; z-index:20; width:38px; height:38px;
+    border-radius:50%; border:1px solid var(--rule); background:var(--panel); color:var(--ink);
+    cursor:pointer; font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center}
+  .themebtn:hover{border-color:var(--amber)}
+  .themebtn:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" aria-label="Switch between dark and light theme" title="Theme">◐</button>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">DGX Spark · GB10 / sm_121 · Qwen3.8-27B field notes</p>
+    <h1>Native MTP won. The grafts that were supposed to be faster <em>did not</em>.</h1>
+    <p class="standfirst">I put <a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth's Qwen3.8-27B-NVFP4</a> on one GB10 the day it dropped. Daily winner: baked MTP at k=2, <strong>17.9–18.4 tok/s</strong> streaming with thinking on. A 3.6 DFlash graft boots and is slower. RadixArk's DSpark exists and never served a token on this stack. This page is only 3.8 — the 3.6 story stays at <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a>.</p>
+    <p class="byline">
+      <span>One GB10 · 121 GiB unified · ~273 GB/s</span>
+      <span>vLLM 0.27.2rc1 · FlashInfer 0.6.18</span>
+      <span>All figures measured, not quoted</span>
+      <span>Written with Grok (xAI) &amp; Rem, my personal AI agent</span>
+      <span><a href="https://x.com/Hiceron2">@Hiceron2</a> · <a href="https://github.com/hiceron/spark-qwen38-27b">github.com/hiceron/spark-qwen38-27b</a></span>
+    </p>
+  </div>
+</header>
+
+<main>
+<div class="bleed">
+  <div class="tiles">
+    <div class="tile win">
+      <p class="k">Daily winner</p>
+      <p class="v win">MTP k=2</p>
+      <p class="s">17.9–18.4 tok/s streaming, c=1 · thinking on</p>
+    </div>
+    <div class="tile">
+      <p class="k">KV @ U=0.55</p>
+      <p class="v">3.61×</p>
+      <p class="s">945,803 tokens · fp8_e4m3fn · 262k window</p>
+    </div>
+    <div class="tile win">
+      <p class="k">KV lever: U=0.74</p>
+      <p class="v win">5.91×</p>
+      <p class="s">1,549,032 tokens · util, not NVFP4-KV</p>
+    </div>
+    <div class="tile warn">
+      <p class="k">3.6 DFlash graft</p>
+      <p class="v">13.1</p>
+      <p class="s">tok/s · boots · slower · not daily</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="quick">
+    <span class="lbl">The short version</span>
+    <ul>
+      <li>Native MTP is the daily driver. k=3 is a hair faster and a hair less KV. I keep k=2.</li>
+      <li>Raising <code>gpu-memory-utilization</code> 0.55 → 0.74 is the working KV lever. NVFP4-KV is blocked by the same <code>triton_attn</code> backend that makes FP8 KV work on GB10.</li>
+      <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> is real. On Unsloth NVFP4 + vLLM it dies in <code>get_draft_quant_config</code>. Their card is SGLang + official FP8.</li>
+      <li>Nobody has published a z-lab <code>Qwen3.8-27B-DFlash</code>.</li>
+      <li>This bench streams chat with thinking on. keys' 31.7 and Wesche's 23.7 use different tools. I am replaying both; those decimals are not mine yet.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">▸</span>Daily recipe I left running</h2>
+  <p>Image is a one-line fork of <a href="https://github.com/eugr/spark-vllm-docker">eugr/spark-vllm</a> with ffmpeg 6.1.1. Stock eugr boots the text path.</p>
+  <pre><code>export CUTE_DSL_ARCH=sm_121a
+docker run -d --name unsloth38-27b --gpus all --ipc=host --net=host \
+  -e CUTE_DSL_ARCH=sm_121a \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -v ~/vllm-cache:/root/.cache/vllm \
+  --entrypoint vllm spark-vllm:qwen38 \
+  serve unsloth/Qwen3.8-27B-NVFP4 \
+  --served-model-name unsloth27b \
+  --host 0.0.0.0 --port 8888 --trust-remote-code \
+  --quantization compressed-tensors \
+  --attention-backend triton_attn \
+  --gpu-memory-utilization 0.74 --max-model-len 262144 \
+  --max-num-seqs 4 --max-num-batched-tokens 32768 \
+  --enable-chunked-prefill --async-scheduling --enable-prefix-caching \
+  --skip-mm-profiling \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+  --reasoning-parser qwen3 --tool-call-parser qwen3_coder \
+  --enable-auto-tool-choice --hf-overrides '{}'</code></pre>
+  <p><code>triton_attn</code> is required for FP8 KV on sm_121. Voice coexist stays at U=0.55. House ceiling remains 0.80 — speculation scratch sits outside that fraction.</p>
+
+  <h2><span class="num">01</span>Native MTP won the A/B. The graft did not.</h2>
+  <p>Same weights, same image, one variable. First real completion on every boot.</p>
+</div>
+<div class="bleed">
+  <div class="tablewrap">
+    <table>
+      <caption>unsloth/Qwen3.8-27B-NVFP4 · U=0.55 · N=4 · 256k · streaming chat · 2026-08-15</caption>
+      <thead><tr><th>Spec</th><th>Decode c=1</th><th>Decode c=4 agg</th><th>KV @262k</th><th>Daily?</th></tr></thead>
+      <tbody>
+        <tr><td>MTP k=2</td><td class="win">17.9 / 18.4</td><td>55.4 / 66.1</td><td class="win">3.61×</td><td class="win">yes</td></tr>
+        <tr><td>MTP k=3</td><td>18.2 / 19.6</td><td class="win">60.8 / 68.9</td><td>3.47×</td><td>spare</td></tr>
+        <tr><td>3.6 DFlash k=10</td><td class="bad">13.1 / 13.3</td><td class="bad">34.4 / 34.8</td><td class="bad">2.40×</td><td class="bad">no</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="wrap">
+  <p>The DFlash number is not a knock on DFlash. It is a 3.6 drafter glued onto a 3.8 target. It answered <code>spark qwen ready</code> in 2.26 s. It ate about 1.2× of the MTP KV pool.</p>
+
+  <h2><span class="num">02</span>Util is the KV lever. NVFP4-KV is not.</h2>
+  <pre class="err"><code>ValueError: Selected backend AttentionBackendEnum.TRITON_ATTN
+is not valid for this configuration. Reason: ['kv_cache_dtype not supported']</code></pre>
+  <p>The flag exists. The API server accepts it. The backend that can serve FP8 KV on GB10 rejects NVFP4-KV and TurboQuant-KV. I stopped chasing the dtype and raised utilization.</p>
+</div>
+<div class="bleed">
+  <div class="tablewrap">
+    <table>
+      <caption>same MTP k=2, only util changed</caption>
+      <thead><tr><th>Util</th><th>KV tokens</th><th>Concurrency @262k</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>0.55</td><td>920k–993k</td><td>3.51–3.79×</td><td>voice coexist</td></tr>
+        <tr><td class="win">0.74</td><td class="win">1,549,032</td><td class="win">5.91×</td><td class="win">coding-solo</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="wrap">
+  <h2><span class="num">03</span>DSpark exists. It does not boot here.</h2>
+  <p><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk/Qwen3.8-27B-DSpark</a> is a 1.36B BF16 draft, trained with SpecForge, written for official FP8 + SGLang. I pointed vLLM at it anyway. Engine resolved <code>DSparkDraftModel</code>, started both weights, then:</p>
+  <pre class="err"><code>File vllm/model_executor/models/utils.py get_draft_quant_config
+ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
+  <p>Passing <code>--hf-overrides '{}'</code> on the target does not fix the draft <code>ModelConfig</code>. No tok/s — it never served a token. There is no <code>z-lab/Qwen3.8-27B-DFlash</code>; the question is already on the <a href="https://huggingface.co/Qwen/Qwen3.8-27B/discussions/54">official card</a>.</p>
+
+  <h2><span class="num">04</span>What 32 tok/s and 23.7 tok/s actually measure</h2>
+  <p>I read both recipes before replaying them. Their numbers are theirs. The interesting part is the <em>method</em>.</p>
+</div>
+<div class="bleed">
+  <div class="tablewrap">
+    <table>
+      <caption>published recipes I am replaying — their figures, not mine</caption>
+      <thead><tr><th></th><th>keys / drowzeys</th><th>Wesche</th><th>This page</th></tr></thead>
+      <tbody>
+        <tr><td>Claimed tok/s</td><td class="hi">31.7</td><td>23.7</td><td class="win">17.9–18.4</td></tr>
+        <tr><td>API</td><td>/v1/completions</td><td>streamed chat</td><td>streamed chat</td></tr>
+        <tr><td>Thinking</td><td>off (temp 0)</td><td>on, xhigh, 75k-token run</td><td>on</td></tr>
+        <tr><td>Accounting</td><td>decode-only (excludes TTFT)</td><td>SSE decode</td><td>streaming wall</td></tr>
+        <tr><td>MTP</td><td>k=3</td><td>k=3 (code) / k=2 (chat)</td><td>k=2 daily</td></tr>
+        <tr><td>Util</td><td>0.90</td><td>0.80 tuned / 0.60 first-light</td><td>0.55 / 0.74</td></tr>
+        <tr><td>Image</td><td>eugr spark-vllm-b12x 20260813</td><td>vllm/vllm-openai:nightly</td><td>eugr 0.27.2 + ffmpeg</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="wrap">
+  <p>keys' bench computes <code>(completion_tokens - 1) / (wall - ttft)</code> on a 512-token completions stream. That is a different quantity from my chat-streaming number. Wesche says so himself: TTFT-inclusive vs decode-only is a few percent, and code vs prose under MTP can move ~60%. I will publish my replay of both recipes on this same box when the boots finish — not their decimals copied into my table.</p>
+  <div class="note">
+    <span class="lbl">House ceiling</span>
+    <p>keys' champion uses <code>--gpu-memory-utilization 0.90</code>. On unified memory that fraction is also the OS. I will not run 0.90 next to voice or ComfyUI. Replay happens on a cleared box, or at 0.80 first.</p>
+  </div>
+
+  <h2><span class="num">A</span>Whose shoulders</h2>
+</div>
+<div class="bleed">
+  <div class="credits">
+    <div class="credit"><div class="who"><a href="https://huggingface.co/Qwen/Qwen3.8-27B">Qwen</a></div><div class="what">The 3.8 dense hybrid itself. I only measured a quant of it.</div></div>
+    <div class="credit"><div class="who"><a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth</a></div><div class="what">The NVFP4 checkpoint I serve.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/eugr/spark-vllm-docker">eugr</a></div><div class="what">The GB10 vLLM image. House daily adds ffmpeg on top.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000">MiaAI</a></div><div class="what"><code>triton_attn</code> as the GB10 path that actually serves FP8 KV.</div></div>
+    <div class="credit"><div class="who"><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk</a></div><div class="what">First public 3.8 DSpark. Their card is SGLang + official FP8. I tried the drafter on this stack and it did not boot.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">MTP-3 champion recipe and the completions bench that produces 31.7. I am replaying it.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">Quant ladder, thinking-effort ops, and the 23.7 long-chat number. I am replaying it.</div></div>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Measured 2026-08-15 on one DGX Spark — GB10 (sm_121), 121 GiB unified, driver 595.71.05 — <code>spark-vllm:qwen38</code> (eugr vLLM 0.27.2rc1, FlashInfer 0.6.18).</p>
+    <p>Scripts and raw logs: <a href="https://github.com/hiceron/spark-qwen38-27b"><strong>github.com/hiceron/spark-qwen38-27b</strong></a> · Qwen3.6 sister writeup: <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a> · <a href="https://hiceron.github.io/">hiceron.github.io</a> · <a href="https://x.com/Hiceron2">@Hiceron2</a>. Numbers are facts — take them, and say where they came from.</p>
+  </div>
+</footer>
+<script>
+(function(){
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('theme'); } catch(e){}
+  root.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+  document.getElementById('themebtn').addEventListener('click', function(){
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

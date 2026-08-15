@@ -1,0 +1,24 @@
+# Qwen3.8-27B-NVFP4 — MTP k=2 — 256k — 2026-08-15
+# Image: eugr/spark-vllm:latest  a0cb301789ef  (2026-08-14)
+#   vLLM 0.27.2rc1.dev88+gaa3100357.d20260814
+#   transformers 5.15.0  flashinfer 0.6.18  cutlass 4.7.0
+# Weights: unsloth/Qwen3.8-27B-NVFP4  snapshot a767244
+# Flags: U=0.55 N=4 L=262144 kv=auto attn=triton_attn spec=mtp k=2
+#         compressed-tensors  batched=32768  chunked-prefill  async  prefix-cache
+#         skip-mm-profiling  tool=qwen3_coder  reasoning=qwen3
+# KV log: 32.98 GiB available, 945803 tokens, Maximum concurrency @262144 = 3.61x
+# KV dtype resolved: flashinfer float8_e4m3fn sm121
+# First real completion (zombie check): 14.19s wall, 63 prompt + 44 completion, thinking on, content "spark qwen ready"
+# Bench: spark-deploy/concurrency_bench.py (STREAMING — ~15-25% lower than non-stream)
+
+model=unsloth27b mode=decode prompt_tokens~short max_tokens=256 reps=2
+conc | wall_s | prefill tok/s | decode tok/s | TTFT mean | TTFT p95 | ok
+   1 |   14.3 |             6 |         17.9 |      0.24 |     0.24 | 1/1
+   1 |   13.9 |             6 |         18.4 |      0.14 |     0.14 | 1/1
+   4 |   18.5 |            17 |         55.4 |      2.60 |     2.60 | 4/4
+   4 |   15.5 |            21 |         66.1 |      0.56 |     0.57 | 4/4
+
+model=unsloth27b mode=prefill prompt_tokens~8192 max_tokens=1 reps=2
+conc | wall_s | prefill tok/s | decode tok/s | TTFT mean | TTFT p95 | ok
+   1 |    5.9 |          1382 |          0.2 |      5.90 |     5.90 | 1/1
+   1 |    5.9 |          1377 |          0.2 |      5.92 |     5.92 | 1/1

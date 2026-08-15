@@ -1,0 +1,14 @@
+# Qwen3.8-27B-NVFP4 — DFlash k=10 graft (Qwen3.6 AEON drafter) — 256k — 2026-08-15
+# Drafter: ~/Desktop/aeon/archive/dflash-drafter-qwen36-27b
+# Same image/weights/flags as mtp-k2 except spec=dflash k=10
+# KV log: 26.26 GiB available, 629437 tokens, Maximum concurrency @262144 = 2.40x
+# First real completion: 2.26s wall, 63 prompt + 44 completion, thinking on, content "spark qwen ready"
+# Verdict: boots and answers, SLOWER than native MTP and eats KV. Not daily.
+# Bench: streaming concurrency_bench.py
+
+model=unsloth27b mode=decode prompt_tokens~short max_tokens=256 reps=2
+conc | wall_s | prefill tok/s | decode tok/s | TTFT mean | TTFT p95 | ok
+   1 |   19.5 |             4 |         13.1 |      0.26 |     0.26 | 1/1
+   1 |   19.3 |             4 |         13.3 |      0.26 |     0.26 | 1/1
+   4 |   29.8 |            11 |         34.4 |      0.48 |     0.53 | 4/4
+   4 |   29.5 |            11 |         34.8 |      0.47 |     0.52 | 4/4

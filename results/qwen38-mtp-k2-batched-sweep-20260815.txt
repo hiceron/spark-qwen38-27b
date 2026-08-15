@@ -1,0 +1,21 @@
+# MTP k=2 batched-token sweep — spark-vllm:qwen38 (eugr 0.27.2 + ffmpeg)
+# U=0.55 N=4 L=262144 kv=auto attn=triton_attn
+# streaming concurrency_bench.py
+
+# batched=8192
+KV 965166 tokens  3.68x @262k
+decode c=1  17.2 / 18.2   c=4  57.5 / 64.9
+pp8192  1331 / 1332 tok/s  TTFT 6.12 / 6.13 s
+
+# batched=16384
+KV 993466 tokens  3.79x @262k
+decode c=1  17.4 / 19.9   c=4  58.0 / 66.4
+pp8192  1348 / 1356 tok/s  TTFT 6.05 / 6.01 s
+
+# batched=32768
+KV 920482 tokens  3.51x @262k
+decode c=1  18.3 / 19.0   c=4  62.7 / 65.2
+pp8192  1315 / 1316 tok/s  TTFT 6.20 / 6.20 s
+
+# read: 16k buys a bit more KV; 32k is slightly faster decode; 8k prefill is flat
+# (an 8k prompt fits all three budgets). Keep 32768 for long agent turns.

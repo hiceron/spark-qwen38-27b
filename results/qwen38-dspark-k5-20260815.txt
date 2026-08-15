@@ -1,0 +1,17 @@
+# DSpark RadixArk/Qwen3.8-27B-DSpark — FAIL — 2026-08-15
+# Image spark-vllm:qwen38 (vLLM 0.27.2rc1)
+# Target unsloth/Qwen3.8-27B-NVFP4  spec method=dspark k=5
+#
+# Engine DOES resolve architecture DSparkDraftModel and starts loading
+# both the 21.8 GiB NVFP4 target and the 2.6 GiB BF16 draft.
+# Then EngineCore dies:
+#
+#   File vllm/v1/worker/gpu/spec_decode/dspark/utils.py load_dspark_model
+#   File vllm/model_executor/models/utils.py get_draft_quant_config
+#   ValueError: hf_overrides must be a dict for get_quant_config
+#               to get the quantization config from it.
+#
+# Retry with --hf-overrides '{}' on the TARGET did not fix it:
+# the DRAFT ModelConfig is built with hf_overrides=None.
+# RadixArk card is SGLang + Qwen FP8 target, not Unsloth NVFP4 + vLLM.
+# Not usable as daily. Native MTP stays the winner.
