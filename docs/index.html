@@ -145,7 +145,7 @@
       <li>Raising <code>gpu-memory-utilization</code> 0.55 → 0.74 is the working KV lever. NVFP4-KV is blocked by the same <code>triton_attn</code> backend that makes FP8 KV work on GB10.</li>
       <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> is real. On Unsloth NVFP4 + vLLM it dies in <code>get_draft_quant_config</code>. Their card is SGLang + official FP8.</li>
       <li>Nobody has published a z-lab <code>Qwen3.8-27B-DFlash</code>.</li>
-      <li>This bench streams chat with thinking on. keys' 31.7 and Wesche's 23.7 use different tools. I am replaying both; those decimals are not mine yet.</li>
+      <li>keys' 32 tok/s is real on this box: <strong>32.1</strong> with their decode-only completions bench at MTP k=3. My 18 is streaming chat with thinking on. Both are true.</li>
     </ul>
   </div>
 
@@ -215,31 +215,27 @@ is not valid for this configuration. Reason: ['kv_cache_dtype not supported']</c
 ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
   <p>Passing <code>--hf-overrides '{}'</code> on the target does not fix the draft <code>ModelConfig</code>. No tok/s — it never served a token. There is no <code>z-lab/Qwen3.8-27B-DFlash</code>; the question is already on the <a href="https://huggingface.co/Qwen/Qwen3.8-27B/discussions/54">official card</a>.</p>
 
-  <h2><span class="num">04</span>What 32 tok/s and 23.7 tok/s actually measure</h2>
-  <p>I read both recipes before replaying them. Their numbers are theirs. The interesting part is the <em>method</em>.</p>
+  <h2><span class="num">04</span>keys' 32 tok/s — reproduced. It is the bench, not a secret flag.</h2>
+  <p>I ran their public method on this box: <code>/v1/completions</code>, temp 0, <code>(n-1)/(wall-ttft)</code>, 512-token generation, median of 5. Same house image. Util 0.74, not their 0.90.</p>
 </div>
 <div class="bleed">
   <div class="tablewrap">
     <table>
-      <caption>published recipes I am replaying — their figures, not mine</caption>
-      <thead><tr><th></th><th>keys / drowzeys</th><th>Wesche</th><th>This page</th></tr></thead>
+      <caption>keys decode-only bench · this GB10 · spark-vllm:qwen38</caption>
+      <thead><tr><th>MTP</th><th>keys published</th><th>This box</th></tr></thead>
       <tbody>
-        <tr><td>Claimed tok/s</td><td class="hi">31.7</td><td>23.7</td><td class="win">17.9–18.4</td></tr>
-        <tr><td>API</td><td>/v1/completions</td><td>streamed chat</td><td>streamed chat</td></tr>
-        <tr><td>Thinking</td><td>off (temp 0)</td><td>on, xhigh, 75k-token run</td><td>on</td></tr>
-        <tr><td>Accounting</td><td>decode-only (excludes TTFT)</td><td>SSE decode</td><td>streaming wall</td></tr>
-        <tr><td>MTP</td><td>k=3</td><td>k=3 (code) / k=2 (chat)</td><td>k=2 daily</td></tr>
-        <tr><td>Util</td><td>0.90</td><td>0.80 tuned / 0.60 first-light</td><td>0.55 / 0.74</td></tr>
-        <tr><td>Image</td><td>eugr spark-vllm-b12x 20260813</td><td>vllm/vllm-openai:nightly</td><td>eugr 0.27.2 + ffmpeg</td></tr>
+        <tr><td>k=2</td><td>26.3</td><td class="win">26.4</td></tr>
+        <tr><td>k=3</td><td>31.7</td><td class="win">32.1</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 <div class="wrap">
-  <p>keys' bench computes <code>(completion_tokens - 1) / (wall - ttft)</code> on a 512-token completions stream. That is a different quantity from my chat-streaming number. Wesche says so himself: TTFT-inclusive vs decode-only is a few percent, and code vs prose under MTP can move ~60%. I will publish my replay of both recipes on this same box when the boots finish — not their decimals copied into my table.</p>
+  <p>I did not need <code>eugr/spark-vllm-b12x:nightly-20260813</code>, <code>FLASHINFER_CUDA_ARCH_LIST=12.1a</code>, or util 0.90. MTP-3 plus decode-only completions is the whole win. My 17.9–18.4 is still the number that matches how Hermes chats — streaming, thinking on, short generations.</p>
+  <p>Wesche's 23.7 is a long xhigh-thinking SSE artifact. I only replayed his 400-token thinking-off probe: <strong>19.1</strong> tok/s at k=2 and <strong>17.2</strong> at k=3 (TTFT-inclusive). I have not rerun the 75k-token creative task.</p>
   <div class="note">
     <span class="lbl">House ceiling</span>
-    <p>keys' champion uses <code>--gpu-memory-utilization 0.90</code>. On unified memory that fraction is also the OS. I will not run 0.90 next to voice or ComfyUI. Replay happens on a cleared box, or at 0.80 first.</p>
+    <p>keys' README uses <code>--gpu-memory-utilization 0.90</code>. I did not. 0.74 already reproduced 32.1. Do not run 0.90 next to voice or ComfyUI.</p>
   </div>
 
   <h2><span class="num">A</span>Whose shoulders</h2>
@@ -251,8 +247,8 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
     <div class="credit"><div class="who"><a href="https://github.com/eugr/spark-vllm-docker">eugr</a></div><div class="what">The GB10 vLLM image. House daily adds ffmpeg on top.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000">MiaAI</a></div><div class="what"><code>triton_attn</code> as the GB10 path that actually serves FP8 KV.</div></div>
     <div class="credit"><div class="who"><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk</a></div><div class="what">First public 3.8 DSpark. Their card is SGLang + official FP8. I tried the drafter on this stack and it did not boot.</div></div>
-    <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">MTP-3 champion recipe and the completions bench that produces 31.7. I am replaying it.</div></div>
-    <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">Quant ladder, thinking-effort ops, and the 23.7 long-chat number. I am replaying it.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">MTP-3 champion recipe and the completions bench. I replayed it: 32.1 on this box. Credit for publishing the method.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">Quant ladder, thinking-effort ops, and the honest 23.7 long-chat number. I replayed the 400-token probe, not the 75k-token run.</div></div>
   </div>
 </div>
 </main>

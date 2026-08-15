@@ -89,4 +89,17 @@ House daily image is `spark-vllm:qwen38` — eugr 0.27.2rc1 plus ffmpeg 6.1.1. S
 - SGLang + RadixArk NVFP4 + DSpark not measured here (published 38.28 tok/s on Spark — their number, their tool).
 - Non-streaming rerun of MTP k=2 (this bench reads ~15–25% lower).
 - Lab GitHub/Pages: own repo `spark-qwen38-27b` (the 3.6 lab is a separate story).
-- keys MTP-3 (`drowzeys/keys-vLLm.0.27-…`) and Wesche ladder: recipe read, replay in progress. Their 31.7 / 23.7 are not my numbers.
+### Replay — keys decode-only bench (their method, this box)
+
+Same `spark-vllm:qwen38` image. `/v1/completions`, temp 0, `(n-1)/(wall-ttft)`, 512-token gen, median of 5.
+
+| Boot | My median | keys published |
+|---|---|---|
+| MTP k=2 U=0.74 | **26.4** | 26.3 |
+| MTP k=3 U=0.74 | **32.1** | 31.7 |
+
+Did **not** need their util 0.90, `FLASHINFER_CUDA_ARCH_LIST=12.1a`, or `eugr/spark-vllm-b12x:nightly-20260813`. The 32 is MTP-3 + decode-only completions, thinking off.
+
+Wesche `verify.sh`-style 400-token thinking-off chat (TTFT-inclusive): k=2 **19.1** · k=3 **17.2**. Their 23.7 is a long xhigh-thinking SSE artifact — not this probe. Not replayed.
+
+Box left on **MTP k=3 U=0.74** after the replay (KV 5.73× @262k).

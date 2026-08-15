@@ -1,0 +1,6 @@
+# Wesche verify.sh-style probe — 400-token thinking-off chat, TTFT-inclusive
+# 2026-08-15  spark-vllm:qwen38  U=0.74  triton_attn
+MTP k=2: 400 tok in ~20.9s = 19.1 tok/s (incl TTFT)  reasoning_chars=0
+MTP k=3: 400 tok in 23.3s = 17.2 tok/s (incl TTFT)  reasoning_chars=0
+# Wesche published 23.7 from a long streamed xhigh-thinking artifact, not this 400-token probe.
+# I did not replay the 75k-token creative task.

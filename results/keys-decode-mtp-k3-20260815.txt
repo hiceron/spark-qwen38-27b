@@ -1,0 +1,9 @@
+# keys/drowzeys decode-only bench replay — MTP k=3 — 2026-08-15
+# Boot: spark-vllm:qwen38  U=0.74  N=4  triton_attn  MTP k=3  (NOT their 0.90 / b12x image)
+# KV: 1,501,103 tokens  5.73x @262144
+# Method: /v1/completions  temp=0  stream  (n-1)/(wall-ttft)  512 gen
+ttft_ms_median=430
+single_stream_tps_median=32.1
+reps=32.1 32.2 32.1 32.2 32.1
+# keys published MTP n=3: 31.7  — reproduced
+# Did not need util 0.90, FLASHINFER_CUDA_ARCH_LIST, or their pinned b12x image.

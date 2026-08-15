@@ -83,12 +83,20 @@ On Unsloth NVFP4 + vLLM 0.27.2 the engine starts loading both weights, then dies
 in `get_draft_quant_config` (`hf_overrides` is `None` on the draft `ModelConfig`).
 No tok/s from me — it never served a token. There is no `z-lab/Qwen3.8-27B-DFlash`.
 
-### 4. Other people's 20–32 tok/s are a different measuring tool
+### 4. keys' 32 tok/s is real — it is a different measuring tool, not a different kernel
 
-keys' public bench hits `/v1/completions` at **temp 0**, thinking off, and reports
-**decode-only** `(tokens-1)/(wall-ttft)` over a 512-token generation. Wesche's 23.7
-is a long streamed **chat** with thinking on, from SSE artifacts. My daily number
-is short streaming **chat** with thinking on. I do not mix those decimals.
+I replayed [keys/drowzeys](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark)
+`/v1/completions` bench on this box, same house image, no 0.90 util:
+
+| | MTP k=2 | MTP k=3 |
+|---|---|---|
+| keys published | 26.3 | 31.7 |
+| **this box, their method** | **26.4** | **32.1** |
+
+The 32 is **MTP-3 + decode-only completions at temp 0**. My 18 is streaming **chat** with
+thinking on. Both are true. I did not need their pinned `spark-vllm-b12x` image or
+`FLASHINFER_CUDA_ARCH_LIST`. Wesche's 23.7 is a long thinking-on SSE run — I only
+replayed his 400-token thinking-off probe (19.1 at k=2, 17.2 at k=3).
 
 ---
 

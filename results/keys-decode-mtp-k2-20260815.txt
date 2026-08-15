@@ -1,0 +1,8 @@
+# keys/drowzeys decode-only bench replay — MTP k=2 — 2026-08-15
+# Current house boot: spark-vllm:qwen38  U=0.74  N=4  triton_attn  MTP k=2
+# Method: /v1/completions  temp=0  stream  (n-1)/(wall-ttft)  512 gen  ~1k prompt
+# 5 reps after warmup
+ttft_ms_median=425
+single_stream_tps_median=26.4
+reps=26.5 26.5 26.4 26.4 26.4
+# keys published MTP n=2: 26.3  — match
