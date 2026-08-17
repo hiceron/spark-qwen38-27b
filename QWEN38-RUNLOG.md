@@ -115,3 +115,59 @@ Replay on this box, MTP k=3 U=0.74, xhigh, temp 0.6, streamed chat, 4096-token c
 His 75k / 53 min job and `vllm/vllm-openai:nightly` are still untested here.
 
 Box left on **MTP k=3 U=0.74** (KV 5.73× @262k).
+
+## 2026-08-17 — Bakeer DSpark reproduction (goal ≥50 C1)
+
+Voice/TTS/STT/Comfy/H3 **images and weights kept**. Stopped `qwen3-asr` + `qwen3-tts` + `firecrawl-api-1` only. `clear-ram` → MemAvailable **118 GiB**. Did not delete NVFP4 (22G) and did not touch NAS.
+
+### Boot #6 — Doopeworld DSpark k=14, U=0.85 — OK
+
+- Image `spark-vllm:qwen38` (0.27.2rc1), weights `unsloth/Qwen3.8-27B-NVFP4`, drafter `Doopeworld/Qwen3.8-27B-DSpark-vLLM`
+- Flags match Bakeer `serve.sh` (prefix cache, batched 16384, no extra `triton_attn` / `hf-overrides`)
+- KV: **1,161,326 tokens** · **4.43× @262144**
+- First EngineCore death (40.2 GiB free vs 85.14 needed) was ghost RAM + voice still up. After voice-stop + clear-ram it booted.
+- RadixArk DSpark + Unsloth still does not boot (`hf_overrides`). This is a different drafter.
+
+### Benches (C1, this box)
+
+Bakeer `edit_bench.py` (thinking **off**, his method):
+
+| label | tok | wall | tok/s | accept | mean tok/pass |
+|---|---:|---:|---:|---:|---:|
+| warmup | 32 | 2.3s | 13.85 | 13.0% | 2.82 |
+| fresh-code | 400 | 14.6s | **27.42** | 18.1% | 3.54 |
+| EDIT-heavy | 3000 | 39.8s | **75.31** | 68.3% | 10.56 |
+| EDIT-heavy #2 | 3000 | 38.2s | **78.51** | 68.3% | 10.56 |
+
+Bakeer published k=14: 29.55 fresh / 72.63–75.01 edit. Reproduced.
+
+House `c1_think_bench.py` (streaming):
+
+| label | thinking | tok/s wall | tok/s decode | notes |
+|---|---|---:|---:|---|
+| c1-off-fresh-400 | off | 27.39 | 27.86 | matches Bakeer fresh |
+| c1-on-fresh-400 | on | 16.69 | 16.84 | 1576 reason chars, 0 content |
+| c1-on-fresh-4096 | on | 24.06 | 24.10 | 13000 reason chars, 0 content |
+
+Edit-heavy with thinking **on** (`c1_think_edit_bench.py`):
+
+| label | tok/s wall | decode | reason/content chars | accept |
+|---|---:|---:|---|---:|
+| c1-on-edit-3000 | 23.41 | 24.00 | 10474 / 199 | 15.1% |
+| c1-on-edit-3000-b | 31.98 | 32.52 | 6800 / 4181 | 23.0% |
+
+Brief-think then edit (`c1_brief_think_edit.py`, thinking **on**):
+
+| label | tok/s wall | decode | reason/content |
+|---|---:|---:|---|
+| c1-briefthink-edit-3000 | 43.11 | **44.10** | 3699 / 7612 |
+| c1-briefthink-edit-3000-b | **69.76** | **72.41** | 639 / 10252 |
+
+Files: `results/bakeer-edit-20260817.txt`, `c1-think-20260817.txt`, `c1-think-edit-20260817.txt`, `c1-briefthink-edit-20260817.txt`.
+
+### House wire
+
+- **4-vLLM-Coding** → this DSpark recipe (voice off, U=0.85, Hermes `unsloth27b`).
+- Daily live stays SGLang 0.55 + ASR/TTS. Unconstrained thinking-on is still ~24.
+
+Box left on **DSpark k=14 U=0.85** (`qwen38-dspark-vllm`, served `qwen3.8-27b`).

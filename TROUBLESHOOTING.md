@@ -31,11 +31,15 @@ Raise `--gpu-memory-utilization` instead. Stay ≤ 0.80.
 
 ## DSpark on vLLM + Unsloth NVFP4
 
+**RadixArk** (`RadixArk/Qwen3.8-27B-DSpark`) still dies:
+
 ```
 ValueError: hf_overrides must be a dict for get_quant_config
 ```
 
-The draft `ModelConfig` is built with `hf_overrides=None`. Passing `'{}'` on the target does not fix the draft. RadixArk's card is SGLang + official FP8.
+The draft `ModelConfig` is built with `hf_overrides=None`. Passing `'{}'` on the target does not fix the draft. Their card is SGLang + official FP8.
+
+**Doopeworld** (`Doopeworld/Qwen3.8-27B-DSpark-vLLM`) boots. Use `scripts/boot-bakeer-dspark.sh`. If EngineCore says free memory < desired util (0.85 needs ~103 GiB), stop ASR/TTS (**do not** delete those images) and `clear-ram`. Do not delete Comfy / H3 / Krea weights to make space — drop NVFP4 only if you must, and redownload later.
 
 ## ffmpeg missing in stock eugr
 

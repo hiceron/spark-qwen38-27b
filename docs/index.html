@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Qwen3.8-27B-NVFP4 on one DGX Spark — native MTP k=2 at 18 tok/s streaming, 5.91× of 262k KV. The grafts that were supposed to be faster, weren't.">
+<meta name="description" content="Qwen3.8-27B-NVFP4 on one DGX Spark — Doopeworld DSpark k=14 hits 75 tok/s C1 on edit-heavy, 44–72 with brief thinking. Long unconstrained thinking is still ~24.">
 <meta name="author" content="Dawid (@Hiceron2)">
-<meta property="og:title" content="Qwen3.8-27B-NVFP4 on one Spark — native MTP won, the grafts did not">
-<meta property="og:description" content="Day-one measurements on a GB10: 17.9–18.4 tok/s streaming, 5.91× KV at util 0.74. DFlash graft slower. DSpark did not boot.">
+<meta property="og:title" content="Qwen3.8-27B-NVFP4 on one Spark — DSpark boots. 75 tok/s is the edit path.">
+<meta property="og:description" content="Bakeer's Doopeworld DSpark recipe on this GB10: 75.3/78.5 tok/s C1 edit-off, 44–72 brief-think-on. Unconstrained thinking is still 16.7–24.1.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hiceron.github.io/spark-qwen38-27b/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:creator" content="@Hiceron2">
-<title>Qwen3.8-27B-NVFP4 on one Spark — native MTP won, the grafts did not</title>
+<title>Qwen3.8-27B-NVFP4 on one Spark — DSpark boots. 75 tok/s is the edit path.</title>
 <style>
   :root{
     --ground:#FBFBFC; --panel:#F1F3F7; --panel-2:#E7EAF1; --rule:#DBE0E9;
@@ -99,8 +99,8 @@
 <header>
   <div class="wrap">
     <p class="eyebrow">DGX Spark · GB10 / sm_121 · Qwen3.8-27B field notes</p>
-    <h1>Native MTP won. The grafts that were supposed to be faster <em>did not</em>.</h1>
-    <p class="standfirst">I put <a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth's Qwen3.8-27B-NVFP4</a> on one GB10 the day it dropped. Daily winner: baked MTP at k=2, <strong>17.9–18.4 tok/s</strong> streaming with thinking on. A 3.6 DFlash graft boots and is slower. RadixArk's DSpark exists and never served a token on this stack. This page is only 3.8 — the 3.6 story stays at <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a>.</p>
+    <h1>DSpark boots. 75 tok/s is the edit path. Long thinking is still <em>~24</em>.</h1>
+    <p class="standfirst">I put <a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth's Qwen3.8-27B-NVFP4</a> on one GB10 the day it dropped. Day-one winner was baked MTP. On 2026-08-17 I ran <a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">Bakeer's</a> Doopeworld DSpark recipe on this box. C1 edit-heavy thinking-off: <strong>75.3 / 78.5 tok/s</strong>. Brief thinking + the same edit: <strong>44.1 / 72.4</strong>. Unconstrained thinking-on is still <strong>16.7–24.1</strong>. This page is only 3.8 — the 3.6 story stays at <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a>.</p>
     <p class="byline">
       <span>One GB10 · 121 GiB unified · ~273 GB/s</span>
       <span>vLLM 0.27.2rc1 · FlashInfer 0.6.18</span>
@@ -115,24 +115,24 @@
 <div class="bleed">
   <div class="tiles">
     <div class="tile win">
-      <p class="k">Daily winner</p>
-      <p class="v win">MTP k=2</p>
-      <p class="s">17.9–18.4 tok/s streaming, c=1 · thinking on</p>
-    </div>
-    <div class="tile">
-      <p class="k">KV @ U=0.55</p>
-      <p class="v">3.61×</p>
-      <p class="s">945,803 tokens · fp8_e4m3fn · 262k window</p>
+      <p class="k">Coding solo C1</p>
+      <p class="v win">75.3</p>
+      <p class="s">tok/s · DSpark k=14 · edit-heavy · thinking off</p>
     </div>
     <div class="tile win">
-      <p class="k">KV lever: U=0.74</p>
-      <p class="v win">5.91×</p>
-      <p class="s">1,549,032 tokens · util, not NVFP4-KV</p>
+      <p class="k">Same path, thinking on</p>
+      <p class="v win">44 / 72</p>
+      <p class="s">brief think then edit · two consecutive runs</p>
     </div>
     <div class="tile warn">
-      <p class="k">3.6 DFlash graft</p>
-      <p class="v">13.1</p>
-      <p class="s">tok/s · boots · slower · not daily</p>
+      <p class="k">Long think, C1</p>
+      <p class="v">16.7–24.1</p>
+      <p class="s">unconstrained reasoning · not 50</p>
+    </div>
+    <div class="tile">
+      <p class="k">Live talk</p>
+      <p class="v">MTP / SGLang</p>
+      <p class="s">~18–24 tok/s thinking-on · voice stays up</p>
     </div>
   </div>
 </div>
@@ -141,15 +141,33 @@
   <div class="quick">
     <span class="lbl">The short version</span>
     <ul>
-      <li>Native MTP is the daily driver. k=3 is a hair faster and a hair less KV. I keep k=2.</li>
-      <li>Raising <code>gpu-memory-utilization</code> 0.55 → 0.74 is the working KV lever. NVFP4-KV is blocked by the same <code>triton_attn</code> backend that makes FP8 KV work on GB10.</li>
-      <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> is real. On Unsloth NVFP4 + vLLM it dies in <code>get_draft_quant_config</code>. Their card is SGLang + official FP8.</li>
-      <li>Nobody has published a z-lab <code>Qwen3.8-27B-DFlash</code>.</li>
-      <li>The house number is thinking <strong>on</strong>: <strong>17.9–19.6 tok/s</strong> streaming chat. 32 tok/s is a thinking-off completions bench. I reproduced it. I do not use it. This model without thinking is not the model we bought.</li>
+      <li><a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld DSpark</a> + Bakeer's flags is the coding-solo winner. I reproduced his <strong>75 tok/s</strong> C1 edit-heavy (thinking off) and hit <strong>44 / 72</strong> with thinking on when the think stays short.</li>
+      <li>Unconstrained thinking-on is still <strong>16.7–24.1</strong>. The drafter cannot copy a chain of thought that is not in the prompt. That is why 50 does not hold on a 4k free-think.</li>
+      <li>Live talk stays SGLang / MTP at U=0.55 so ASR/TTS fit. DSpark 0.85 is sole occupant — voice containers stopped, images and weights kept.</li>
+      <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> still dies in <code>get_draft_quant_config</code> on this stack. Different drafter.</li>
+      <li>32 tok/s is still a thinking-off completions bench. I do not quote it as daily live.</li>
     </ul>
   </div>
 
-  <h2><span class="num">▸</span>Daily recipe I left running</h2>
+  <h2><span class="num">▸</span>Coding-solo recipe I left running (2026-08-17)</h2>
+  <p>Bakeer's flags on the house image. Voice off. Wrapper: <code>scripts/boot-bakeer-dspark.sh</code>.</p>
+  <pre><code>docker run -d --name qwen38-dspark-vllm --gpus all --ipc=host --net=host \
+  -e VLLM_MARLIN_USE_ATOMIC_ADD=1 \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -v ~/vllm-cache:/root/.cache/vllm \
+  --entrypoint vllm spark-vllm:qwen38 \
+  serve unsloth/Qwen3.8-27B-NVFP4 \
+  --served-model-name unsloth27b qwen3.8-27b \
+  --host 0.0.0.0 --port 8888 \
+  --max-model-len 262144 --gpu-memory-utilization 0.85 \
+  --max-num-batched-tokens 16384 --enable-prefix-caching \
+  --reasoning-parser qwen3 --tool-call-parser qwen3_xml \
+  --enable-auto-tool-choice \
+  --limit-mm-per-prompt.image 2 --limit-mm-per-prompt.video 0 \
+  --speculative-config '{"method":"dspark","model":"Doopeworld/Qwen3.8-27B-DSpark-vLLM","num_speculative_tokens":14,"draft_sample_method":"probabilistic"}'</code></pre>
+  <p>KV: <strong>1,161,326 tokens · 4.43× @262k</strong>. Live talk stays SGLang 0.55 + voice. House ceiling remains 0.80 when ASR/TTS or Comfy share the box.</p>
+
+  <h2><span class="num">▸</span>Previous daily (MTP k=2)</h2>
   <p>Image is a one-line fork of <a href="https://github.com/eugr/spark-vllm-docker">eugr/spark-vllm</a> with ffmpeg 6.1.1. Stock eugr boots the text path.</p>
   <pre><code>export CUTE_DSL_ARCH=sm_121a
 docker run -d --name unsloth38-27b --gpus all --ipc=host --net=host \
@@ -209,11 +227,12 @@ is not valid for this configuration. Reason: ['kv_cache_dtype not supported']</c
 </div>
 
 <div class="wrap">
-  <h2><span class="num">03</span>DSpark exists. It does not boot here.</h2>
+  <h2><span class="num">03</span>RadixArk DSpark still does not boot. Doopeworld does.</h2>
   <p><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk/Qwen3.8-27B-DSpark</a> is a 1.36B BF16 draft, trained with SpecForge, written for official FP8 + SGLang. I pointed vLLM at it anyway. Engine resolved <code>DSparkDraftModel</code>, started both weights, then:</p>
   <pre class="err"><code>File vllm/model_executor/models/utils.py get_draft_quant_config
 ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
-  <p>Passing <code>--hf-overrides '{}'</code> on the target does not fix the draft <code>ModelConfig</code>. No tok/s — it never served a token. There is no <code>z-lab/Qwen3.8-27B-DFlash</code>; the question is already on the <a href="https://huggingface.co/Qwen/Qwen3.8-27B/discussions/54">official card</a>.</p>
+  <p>Passing <code>--hf-overrides '{}'</code> on the target does not fix the draft <code>ModelConfig</code>. That drafter never served a token here. There is no <code>z-lab/Qwen3.8-27B-DFlash</code>; the question is already on the <a href="https://huggingface.co/Qwen/Qwen3.8-27B/discussions/54">official card</a>.</p>
+  <p>The drafter that <em>does</em> boot is <a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld/Qwen3.8-27B-DSpark-vLLM</a>. That is §05.</p>
 
   <h2><span class="num">04</span>32 tok/s is a tweet bench. The usable number is ~18.</h2>
   <p>House rule: thinking stays on. Without it this 27B is the wrong model. I will not quote a thinking-off completions score as daily speed.</p>
@@ -234,7 +253,29 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
 </div>
 <div class="wrap">
   <p>32 is not fake. It is also not the job. Hermes, agents, and coding here run with thinking on. That path is <strong>~18 tok/s</strong> on a short streaming bench.</p>
-  <p>Wesche's <strong>23.7 with thinking on</strong> is the number I should have chased first — that is a ~25% jump if it holds. I replayed a 4096-token thinking-on coding stream on this box (xhigh, temp 0.6, MTP k=3): <strong>17.2 tok/s</strong>, entire budget in reasoning, no content yet. I did <em>not</em> get 23.7. Still open: his uncapped 75k run and <code>vllm/vllm-openai:nightly</code>.</p>
+  <p>Wesche's <strong>23.7 with thinking on</strong> is the number I should have chased first — that is a ~25% jump if it holds. I replayed a 4096-token thinking-on coding stream on this box (xhigh, temp 0.6, MTP k=3): <strong>17.2 tok/s</strong>, entire budget in reasoning, no content yet. DSpark 4096 think-on: <strong>24.1</strong>. I did <em>not</em> get 23.7 on MTP or 50 on a free-think. Still open: his uncapped 75k run and <code>vllm/vllm-openai:nightly</code>.</p>
+
+  <h2><span class="num">05</span>Bakeer's 75 is real. His 59-with-thinking is the brief-edit path.</h2>
+  <p>I cloned <a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark</a>, stopped voice (kept the images), <code>clear-ram</code>'d to 118 GiB, and booted his <code>serve.sh</code> flags on house <code>spark-vllm:qwen38</code>. Same Unsloth NVFP4, DSpark <code>k=14</code>, prefix cache, <code>gmu 0.85</code>. Then I ran his <code>edit_bench.py</code> and three house thinking benches.</p>
+</div>
+<div class="bleed">
+  <div class="tablewrap">
+    <table>
+      <caption>C1 on this GB10 · 2026-08-17 · spark-vllm:qwen38 · DSpark k=14 · U=0.85</caption>
+      <thead><tr><th>Workload</th><th>Thinking</th><th>tok/s</th><th>Bakeer published</th></tr></thead>
+      <tbody>
+        <tr><td>Fresh 400</td><td>off</td><td>27.42</td><td>29.55</td></tr>
+        <tr><td>Edit-heavy 3000</td><td>off</td><td class="win">75.31 / 78.51</td><td class="win">72.63 / 75.01</td></tr>
+        <tr><td>Fresh 400 / 4096</td><td>on, free</td><td class="hi">16.69 / 24.06</td><td>—</td></tr>
+        <tr><td>Edit-heavy 3000</td><td>on, free</td><td>23.41 / 31.98</td><td>—</td></tr>
+        <tr><td>Edit-heavy 3000</td><td>on, brief</td><td class="win">43.11 / 69.76 wall · 44.1 / 72.4 decode</td><td>he showed 59</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="wrap">
+  <p>Acceptance on the 75 run was 68.3 %, mean 10.56 tok/pass — same shape as his k=14 table. Free-think acceptance drops to 15–23 % because those tokens are not in the prompt. Tell the model to think in two sentences and then emit the file, and the copy-friendly body takes over: second run 72.4 decode, 639 reasoning chars vs 10,252 content chars.</p>
+  <p>I am not going to quote 75 as live-talk speed. Hermes daily still thinks for a long time. That path is ~24. Coding solo, where the job is “rewrite this file”, is the 50+ build. Switcher <code>4-vLLM-Coding.bat</code>.</p>
 
   <h2><span class="num">A</span>Whose shoulders</h2>
 </div>
@@ -245,6 +286,7 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
     <div class="credit"><div class="who"><a href="https://github.com/eugr/spark-vllm-docker">eugr</a></div><div class="what">The GB10 vLLM image. House daily adds ffmpeg on top.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-DGX-Spark-RTX-6000">MiaAI</a></div><div class="what"><code>triton_attn</code> as the GB10 path that actually serves FP8 KV.</div></div>
     <div class="credit"><div class="who"><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk</a></div><div class="what">First public 3.8 DSpark. Their card is SGLang + official FP8. I tried the drafter on this stack and it did not boot.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">Bakeer</a> / <a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld</a></div><div class="what">The vLLM DSpark that actually serves here. I reproduced 75 tok/s C1 edit-off and 44–72 brief-think-on on this box.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">Published the completions bench that produces 32. I reproduced it. Credit for the method — that is not our daily claim.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">23.7 tok/s with thinking on — the first published number that would actually change daily use. I replayed 4k think-on and got 17.2. His 75k run is still open.</div></div>
   </div>
@@ -253,7 +295,7 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
 
 <footer>
   <div class="wrap">
-    <p>Measured 2026-08-15 on one DGX Spark — GB10 (sm_121), 121 GiB unified, driver 595.71.05 — <code>spark-vllm:qwen38</code> (eugr vLLM 0.27.2rc1, FlashInfer 0.6.18).</p>
+    <p>Measured 2026-08-15 and 2026-08-17 on one DGX Spark — GB10 (sm_121), 121 GiB unified, driver 595.71.05 — <code>spark-vllm:qwen38</code> (eugr vLLM 0.27.2rc1, FlashInfer 0.6.18). DSpark numbers: Bakeer <code>edit_bench.py</code> + house stream benches, C1, U=0.85, voice stopped not deleted.</p>
     <p>Scripts and raw logs: <a href="https://github.com/hiceron/spark-qwen38-27b"><strong>github.com/hiceron/spark-qwen38-27b</strong></a> · Qwen3.6 sister writeup: <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a> · <a href="https://hiceron.github.io/">hiceron.github.io</a> · <a href="https://x.com/Hiceron2">@Hiceron2</a>. Numbers are facts — take them, and say where they came from.</p>
   </div>
 </footer>

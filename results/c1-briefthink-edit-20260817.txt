@@ -1,0 +1,6 @@
+endpoint http://127.0.0.1:8888 model qwen3.8-27b
+warmup...
+{"label": "warmup", "thinking": true, "tokens": 32, "wall_s": 4.13, "ttft_s": 3.226, "tok_s_wall": 7.75, "tok_s_decode": 34.3, "reason_chars": 115, "content_chars": 0}
+{"label": "c1-briefthink-edit-3000", "thinking": true, "tokens": 3000, "wall_s": 69.59, "ttft_s": 1.583, "tok_s_wall": 43.11, "tok_s_decode": 44.1, "reason_chars": 3699, "content_chars": 7612}
+{"label": "c1-briefthink-edit-3000-b", "thinking": true, "tokens": 3000, "wall_s": 43.0, "ttft_s": 1.585, "tok_s_wall": 69.76, "tok_s_decode": 72.41, "reason_chars": 639, "content_chars": 10252}
+ALL [{"label": "c1-briefthink-edit-3000", "thinking": true, "tokens": 3000, "wall_s": 69.59, "ttft_s": 1.583, "tok_s_wall": 43.11, "tok_s_decode": 44.1, "reason_chars": 3699, "content_chars": 7612}, {"label": "c1-briefthink-edit-3000-b", "thinking": true, "tokens": 3000, "wall_s": 43.0, "ttft_s": 1.585, "tok_s_wall": 69.76, "tok_s_decode": 72.41, "reason_chars": 639, "content_chars": 10252}]
