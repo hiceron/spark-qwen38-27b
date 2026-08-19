@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Qwen3.8-27B-NVFP4 on one DGX Spark — Doopeworld DSpark k=14 hits 75 tok/s C1 on edit-heavy, 44–72 with brief thinking. Long unconstrained thinking is still ~24.">
+<meta name="description" content="Qwen3.8-27B on one DGX Spark — DFlash2 think-on coding 24.6–30.5 tok/s. DSpark edit-off still 75. House SGLang 0.55 sits next to TRELLIS; DFlash2 does not.">
 <meta name="author" content="Dawid (@Hiceron2)">
-<meta property="og:title" content="Qwen3.8-27B-NVFP4 on one Spark — DSpark boots. 75 tok/s is the edit path.">
-<meta property="og:description" content="Bakeer's Doopeworld DSpark recipe on this GB10: 75.3/78.5 tok/s C1 edit-off, 44–72 brief-think-on. Unconstrained thinking is still 16.7–24.1.">
+<meta property="og:title" content="Qwen3.8-27B on one Spark — DFlash2 for think-on coding. 75 is the edit-off path.">
+<meta property="og:description" content="DFlash2 0.70 think-on: prose 29.82/30.48, code 24.55/24.73, prefill 1114 tok/s. DSpark edit-off still 75.3. TRELLIS stays on house SGLang.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hiceron.github.io/spark-qwen38-27b/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:creator" content="@Hiceron2">
-<title>Qwen3.8-27B-NVFP4 on one Spark — DSpark boots. 75 tok/s is the edit path.</title>
+<title>Qwen3.8-27B on one Spark — DFlash2 for think-on coding. 75 is the edit-off path.</title>
 <style>
   :root{
     --ground:#FBFBFC; --panel:#F1F3F7; --panel-2:#E7EAF1; --rule:#DBE0E9;
@@ -99,11 +99,11 @@
 <header>
   <div class="wrap">
     <p class="eyebrow">DGX Spark · GB10 / sm_121 · Qwen3.8-27B field notes</p>
-    <h1>DSpark boots. 75 tok/s is the edit path. Long thinking is still <em>~24</em>.</h1>
-    <p class="standfirst">I put <a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth's Qwen3.8-27B-NVFP4</a> on one GB10 the day it dropped. Day-one winner was baked MTP. On 2026-08-17 I ran <a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">Bakeer's</a> Doopeworld DSpark recipe on this box. C1 edit-heavy thinking-off: <strong>75.3 / 78.5 tok/s</strong>. Brief thinking + the same edit: <strong>44.1 / 72.4</strong>. Unconstrained thinking-on is still <strong>16.7–24.1</strong>. This page is only 3.8 — the 3.6 story stays at <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a>.</p>
+    <h1>DFlash2 is think-on coding. 75 tok/s is still the <em>edit-off</em> path.</h1>
+    <p class="standfirst">I put <a href="https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4">unsloth's Qwen3.8-27B-NVFP4</a> on one GB10 the day it dropped. 2026-08-17: <a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">Bakeer's</a> DSpark hits <strong>75.3 / 78.5</strong> C1 edit-heavy thinking-off. 2026-08-19: <a href="https://github.com/r0b0tlab/qwen38-27b-nvfp4-sm121-sglang">r0b0tlab</a> body + <a href="https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2">z-lab DFlash2</a> on house SGLang. Think-on C1: prose <strong>29.82 / 30.48</strong>, code <strong>24.55 / 24.73</strong>, ~2k prefill <strong>1114 tok/s</strong>. That is house coding. It CUDA-OOM'd TRELLIS. 3D stays on house SGLang 0.55. This page is only 3.8 — the 3.6 story stays at <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a>.</p>
     <p class="byline">
       <span>One GB10 · 121 GiB unified · ~273 GB/s</span>
-      <span>vLLM 0.27.2rc1 · FlashInfer 0.6.18</span>
+      <span>SGLang house + DFlash2 overlay · vLLM 0.27.2rc1</span>
       <span>All figures measured, not quoted</span>
       <span>Written with Grok (xAI) &amp; Rem, my personal AI agent</span>
       <span><a href="https://x.com/Hiceron2">@Hiceron2</a> · <a href="https://github.com/hiceron/spark-qwen38-27b">github.com/hiceron/spark-qwen38-27b</a></span>
@@ -115,24 +115,24 @@
 <div class="bleed">
   <div class="tiles">
     <div class="tile win">
-      <p class="k">Coding solo C1</p>
-      <p class="v win">75.3</p>
-      <p class="s">tok/s · DSpark k=14 · edit-heavy · thinking off</p>
+      <p class="k">Coding think-on C1</p>
+      <p class="v win">24.6–30.5</p>
+      <p class="s">DFlash2 0.70 · prose 29.82 / code 24.55 · TRELLIS off</p>
     </div>
     <div class="tile win">
-      <p class="k">Same path, thinking on</p>
-      <p class="v win">44 / 72</p>
-      <p class="s">brief think then edit · two consecutive runs</p>
-    </div>
-    <div class="tile warn">
-      <p class="k">Long think, C1</p>
-      <p class="v">16.7–24.1</p>
-      <p class="s">unconstrained reasoning · not 50</p>
+      <p class="k">Edit-off C1</p>
+      <p class="v win">75.3</p>
+      <p class="s">DSpark k=14 · thinking off · not the daily coding switcher</p>
     </div>
     <div class="tile">
-      <p class="k">Live talk</p>
-      <p class="v">MTP / SGLang</p>
-      <p class="s">~18–24 tok/s thinking-on · voice stays up</p>
+      <p class="k">Live + TRELLIS</p>
+      <p class="v">SGLang 0.55</p>
+      <p class="s">~24 tok/s think-on · DFlash2 cannot sit here</p>
+    </div>
+    <div class="tile warn">
+      <p class="k">Prefill ~2k</p>
+      <p class="v">1114</p>
+      <p class="s">tok/s · DFlash2 0.70 · TTFT 1.81 s</p>
     </div>
   </div>
 </div>
@@ -141,10 +141,10 @@
   <div class="quick">
     <span class="lbl">The short version</span>
     <ul>
-      <li><a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld DSpark</a> + Bakeer's flags is the coding-solo winner. I reproduced his <strong>75 tok/s</strong> C1 edit-heavy (thinking off) and hit <strong>44 / 72</strong> with thinking on when the think stays short.</li>
-      <li>Unconstrained thinking-on is still <strong>16.7–24.1</strong>. The drafter cannot copy a chain of thought that is not in the prompt. That is why 50 does not hold on a 4k free-think.</li>
-      <li>Live talk stays SGLang / MTP at U=0.55 so ASR/TTS fit. DSpark 0.85 is sole occupant — voice containers stopped, images and weights kept.</li>
-      <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> still dies in <code>get_draft_quant_config</code> on this stack. Different drafter.</li>
+      <li>House coding is <a href="https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2">DFlash2</a> at 0.70. Think-on C1: prose <strong>29.82 / 30.48</strong>, code <strong>24.55 / 24.73</strong>, ~2k prefill <strong>1114 tok/s</strong>, KV <strong>962,434</strong>.</li>
+      <li><a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld DSpark</a> is still the edit-off 75. Brief-think + edit is 44 / 72. That is not Start-Day coding.</li>
+      <li>Live talk and TRELLIS stay on house SGLang 0.55. DFlash2 + TRELLIS CUDA-OOM'd on HDRI. Do not pair them.</li>
+      <li><a href="https://huggingface.co/RadixArk/Qwen3.8-27B-DSpark">RadixArk's DSpark</a> still dies in <code>get_draft_quant_config</code> on vLLM. Different drafter.</li>
       <li>32 tok/s is still a thinking-off completions bench. I do not quote it as daily live.</li>
     </ul>
   </div>
@@ -275,7 +275,28 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
 </div>
 <div class="wrap">
   <p>Acceptance on the 75 run was 68.3 %, mean 10.56 tok/pass — same shape as his k=14 table. Free-think acceptance drops to 15–23 % because those tokens are not in the prompt. Tell the model to think in two sentences and then emit the file, and the copy-friendly body takes over: second run 72.4 decode, 639 reasoning chars vs 10,252 content chars.</p>
-  <p>I am not going to quote 75 as live-talk speed. Hermes daily still thinks for a long time. That path is ~24. Coding solo, where the job is “rewrite this file”, is the 50+ build. Switcher <code>4-vLLM-Coding.bat</code>.</p>
+  <p>I am not going to quote 75 as live-talk speed. Hermes daily still thinks for a long time. That path is ~24 on house SGLang, ~25–30 on DFlash2. Coding solo, where the job is “rewrite this file” with thinking off, is the 50+ DSpark build — not Start-Day <code>[2]</code>.</p>
+
+  <h2><span class="num">06</span>DFlash2 is house coding. It does not sit next to TRELLIS.</h2>
+  <p>2026-08-19 I overlaid <a href="https://github.com/r0b0tlab/qwen38-27b-nvfp4-sm121-sglang">r0b0tlab</a>'s DFlash2 patches on house <code>lmsysorg/sglang:qwen38-27b</code> — not their 38G campaign digest — and served <code>r0b0tlab/Qwen3.8-27B-NVFP4-MTP-sm121</code> with <a href="https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2">z-lab/Qwen3.8-27B-DFlash2</a>. Port 8888. Canary 19×23 → 437 (417 is the FP8-KV defect). Wrapper: <code>scripts/dflash2-house.sh</code>.</p>
+</div>
+<div class="bleed">
+  <div class="tablewrap">
+    <table>
+      <caption>DFlash2 · streaming chat · think-on · this GB10 · 2026-08-19</caption>
+      <thead><tr><th></th><th>0.70 solo</th><th>0.55 solo</th></tr></thead>
+      <tbody>
+        <tr><td>KV tokens</td><td class="win">962,434 · 3.67×</td><td>615,448 · 2.35×</td></tr>
+        <tr><td>Prose 800 think-on</td><td class="win">29.82 / 30.48</td><td>24.76 / 25.24</td></tr>
+        <tr><td>Code 800 think-on</td><td>24.55 / 24.73</td><td>24.84 / 25.03</td></tr>
+        <tr><td>~2k prefill</td><td class="win">1114 tok/s · TTFT 1.81 s</td><td>1092 tok/s · TTFT 1.84 s</td></tr>
+        <tr><td>TRELLIS.2-4B</td><td class="bad">not tried at 0.70</td><td class="bad">CUDA OOM on HDRI</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="wrap">
+  <p>House split after that day: Start-Day <code>[2]</code> is DFlash2 0.70 (stops TRELLIS). <code>[1]</code> daily live and <code>[4]</code> TRELLIS 3D are house SGLang 0.55. DSpark 0.85 is still the edit-off 75, parked under <code>unsloth27b</code>, not Start-Day.</p>
 
   <h2><span class="num">A</span>Whose shoulders</h2>
 </div>
@@ -289,13 +310,16 @@ ValueError: hf_overrides must be a dict for get_quant_config</code></pre>
     <div class="credit"><div class="who"><a href="https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark">Bakeer</a> / <a href="https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM">Doopeworld</a></div><div class="what">The vLLM DSpark that actually serves here. I reproduced 75 tok/s C1 edit-off and 44–72 brief-think-on on this box.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark">keys / drowzeys</a></div><div class="what">Published the completions bench that produces 32. I reproduced it. Credit for the method — that is not our daily claim.</div></div>
     <div class="credit"><div class="who"><a href="https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder">Wesche</a></div><div class="what">23.7 tok/s with thinking on — the first published number that would actually change daily use. I replayed 4k think-on and got 17.2. His 75k run is still open.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/r0b0tlab/qwen38-27b-nvfp4-sm121-sglang">r0b0tlab</a></div><div class="what">SGLang overlay + NVFP4-MTP-sm121 body. I served it on the house image, not the 38G campaign digest.</div></div>
+    <div class="credit"><div class="who"><a href="https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2">z-lab</a></div><div class="what">DFlash2 drafter. House think-on coding path. Lossless verify.</div></div>
+    <div class="credit"><div class="who"><a href="https://github.com/MiaAI-Lab/Qwen3.8-27B-SGLang-DGX-Spark">MiaAI SGLang</a></div><div class="what">CPU pin <code>5-9,15-19</code> and GDN pool <code>MAX_CONCURRENT × 4</code> on the house start.sh.</div></div>
   </div>
 </div>
 </main>
 
 <footer>
   <div class="wrap">
-    <p>Measured 2026-08-15 and 2026-08-17 on one DGX Spark — GB10 (sm_121), 121 GiB unified, driver 595.71.05 — <code>spark-vllm:qwen38</code> (eugr vLLM 0.27.2rc1, FlashInfer 0.6.18). DSpark numbers: Bakeer <code>edit_bench.py</code> + house stream benches, C1, U=0.85, voice stopped not deleted.</p>
+    <p>Measured 2026-08-15, 2026-08-17, and 2026-08-19 on one DGX Spark — GB10 (sm_121), 121 GiB unified, driver 595.71.05. DSpark: Bakeer <code>edit_bench.py</code> + house stream, C1, U=0.85. DFlash2: <code>think_on_ab_bench.py</code> on overlay image, C1, 0.70 and 0.55. Voice/TRELLIS/H3 weights were not deleted.</p>
     <p>Scripts and raw logs: <a href="https://github.com/hiceron/spark-qwen38-27b"><strong>github.com/hiceron/spark-qwen38-27b</strong></a> · Qwen3.6 sister writeup: <a href="https://hiceron.github.io/spark-nvfp4-lab/">spark-nvfp4-lab</a> · <a href="https://hiceron.github.io/">hiceron.github.io</a> · <a href="https://x.com/Hiceron2">@Hiceron2</a>. Numbers are facts — take them, and say where they came from.</p>
   </div>
 </footer>

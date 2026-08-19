@@ -167,7 +167,49 @@ Files: `results/bakeer-edit-20260817.txt`, `c1-think-20260817.txt`, `c1-think-ed
 
 ### House wire
 
-- **4-vLLM-Coding** → this DSpark recipe (voice off, U=0.85, Hermes `unsloth27b`).
-- Daily live stays SGLang 0.55 + ASR/TTS. Unconstrained thinking-on is still ~24.
+- DSpark coding-solo still lives at `unsloth27b\Switch-to-Unsloth27B-Coding-Solo.bat` (Hermes `unsloth27b`). It is **not** Start-Day `[4]` anymore.
+- Daily live stays house SGLang 0.55 + ASR/TTS. Unconstrained thinking-on is still ~24.
 
-Box left on **DSpark k=14 U=0.85** (`qwen38-dspark-vllm`, served `qwen3.8-27b`).
+## 2026-08-19 — DFlash2 think-on (r0b0tlab body + z-lab draft)
+
+Overlay image `qwen38-27b-sglang-dflash2-sm121:house` on house `lmsysorg/sglang:qwen38-27b`.
+Body `r0b0tlab/Qwen3.8-27B-NVFP4-MTP-sm121`. Draft `z-lab/Qwen3.8-27B-DFlash2`.
+Port **8888**. Canary 19×23 → **437** (417 = FP8-KV defect). Wrapper: `scripts/dflash2-house.sh`.
+
+### Boot DFlash2 0.70 solo — OK
+
+- KV: **962,434 tokens** · **3.67× @262144**
+- `think_on_ab_bench.py` streaming:
+
+| label | think | wall | decode | TTFT | prefill |
+|---|---|---:|---:|---:|---:|
+| prefill-probe ~2k | off | — | — | 1.81 s | **1114 tok/s** |
+| c1-on-prose-800 | on | **29.82** | **30.48** | 0.61 s | — |
+| c1-on-code-800 | on | **24.55** | **24.73** | 0.27 s | — |
+
+File: `results/dflash2-070-thinkon-20260819.txt`
+
+### Boot DFlash2 0.55 solo — OK
+
+- KV: **615,448 tokens** · **2.35× @262144**
+- leftover after boot 42.10 GiB — still not enough for TRELLIS HDRI
+
+| label | think | wall | decode | TTFT | prefill |
+|---|---|---:|---:|---:|---:|
+| prefill-probe ~2k | off | — | — | 1.84 s | 1092 tok/s |
+| c1-on-prose-800 | on | 24.76 | 25.24 | 0.65 s | — |
+| c1-on-code-800 | on | 24.84 | 25.03 | 0.29 s | — |
+
+File: `results/dflash2-055-thinkon-20260819.txt`
+
+### DFlash2 0.55 + TRELLIS.2-4B — FAIL
+
+Starting `trellis2` while DFlash2 0.55 was up: `CUDA error: out of memory` in `app.py` HDRI `EnvMap`. LLM survived. TRELLIS restored alone after DFlash2 `docker rm` + `clear-ram`. No generate at 1024/25/500k was submitted during the failed coexist.
+
+### House split after this day
+
+| Job | Engine |
+|---|---|
+| Daily live + TRELLIS 3D | house SGLang 0.55 (`switch-mode.sh daily` / `trellis`) |
+| Coding, think-on | DFlash2 0.70 (`switch-mode.sh coding`) — **stops TRELLIS** |
+| Edit-heavy think-off 75 | vLLM DSpark 0.85 — not Start-Day |

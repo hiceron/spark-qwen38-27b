@@ -1,0 +1,20 @@
+DFlash2 0.70 solo — 2026-08-19 — this GB10
+Image: qwen38-27b-sglang-dflash2-sm121:house (overlay on lmsysorg/sglang:qwen38-27b)
+Body: r0b0tlab/Qwen3.8-27B-NVFP4-MTP-sm121
+Draft: z-lab/Qwen3.8-27B-DFlash2  (DFlash2DraftModel, block 8)
+mem-fraction-static 0.70  max-running-requests 4  port 8888
+KV: 962,434 tokens · 3.67× @262144  (fp8_e4m3fn)
+Canary 19×23 → 437 (not 417)
+
+think_on_ab_bench.py  (streaming chat)
+
+prefill-probe  ~2k prompt, think-off, 2 tok:
+  TTFT 1.806 s   prefill 1114.3 tok/s
+
+c1-on-prose-800  think-on:
+  wall 29.82 tok/s   decode 30.48   TTFT 0.609 s
+
+c1-on-code-800  think-on:
+  wall 24.55 tok/s   decode 24.73   TTFT 0.269 s
+
+TRELLIS: not running. DFlash2 + TRELLIS later CUDA-OOM'd on HDRI.

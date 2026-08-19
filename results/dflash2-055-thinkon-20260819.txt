@@ -1,0 +1,19 @@
+DFlash2 0.55 solo — 2026-08-19 — this GB10
+Same image / body / draft as the 0.70 run.
+mem-fraction-static 0.55  max-running-requests 4  port 8888
+KV: 615,448 tokens · 2.35× @262144
+available_gpu_mem after boot: 42.10 GB
+
+think_on_ab_bench.py  (streaming chat)
+
+prefill-probe  ~2k prompt, think-off, 2 tok:
+  TTFT 1.842 s   prefill 1092.2 tok/s
+
+c1-on-prose-800  think-on:
+  wall 24.76 tok/s   decode 25.24   TTFT 0.654 s
+
+c1-on-code-800  think-on:
+  wall 24.84 tok/s   decode 25.03   TTFT 0.286 s
+
+Starting TRELLIS.2-4B while this profile was up: CUDA OOM in app.py HDRI EnvMap.
+House SGLang 0.55 (no DFlash2) is the TRELLIS coexist path.

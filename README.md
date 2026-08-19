@@ -1,4 +1,4 @@
-# Qwen3.8-27B-NVFP4 on one DGX Spark — DSpark boots. 75 tok/s is the edit path.
+# Qwen3.8-27B on one DGX Spark — DFlash2 for think-on coding. 75 tok/s is still the edit-off path.
 
 **Blog:** https://hiceron.github.io/spark-qwen38-27b/ · **Author:** [Dawid / @Hiceron2](https://x.com/Hiceron2)
 
@@ -7,7 +7,13 @@ the day it dropped. Day-one: baked MTP was the only thing that served tokens.
 2026-08-17: [Bakeer](https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark)'s
 Doopeworld DSpark recipe boots on this box. C1 edit-heavy thinking-off is
 **75.3 / 78.5 tok/s**. Brief thinking + the same edit is **44.1 / 72.4**.
-Long unconstrained thinking is still **16.7–24.1**. That split is the whole story.
+Long unconstrained thinking on that vLLM path is still **16.7–24.1**.
+
+2026-08-19: [r0b0tlab](https://github.com/r0b0tlab/qwen38-27b-nvfp4-sm121-sglang)'s
+NVFP4-MTP body + [`z-lab/Qwen3.8-27B-DFlash2`](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2)
+on the house SGLang image. Think-on C1: prose **29.82 / 30.48**, code **24.55 / 24.73**,
+~2k prefill **1114 tok/s**, TTFT **1.81 s**, KV **962,434**. That is the house coding
+engine now. It cannot sit next to TRELLIS. 3D stays on house SGLang 0.55.
 
 **Everything here is measured on one machine** — GB10 / sm_121, 121 GiB unified,
 driver 595.71.05 — same streaming bench, one variable at a time.
@@ -32,6 +38,8 @@ Work done with Grok (xAI) and Rem, my personal AI agent.
 | **[0xBakeer](https://github.com/0xBakeer/Qwen3.8-27B-4-bit-on-a-single-DGX-Spark)** + **[Doopeworld DSpark](https://huggingface.co/Doopeworld/Qwen3.8-27B-DSpark-vLLM)** | The vLLM DSpark that actually serves here. I reproduced his 75 tok/s edit-heavy C1 |
 | **[keys / drowzeys](https://github.com/drowzeys/keys-vLLm.0.27-Qwen3.8-NVFP4-MTP3-Single-DGX-Spark)** | MTP-3 completions bench (thinking off). I reproduced 32.1. That is not the house number |
 | **[Wesche](https://github.com/Weschera/Qwen3.8-27B-DGX-Spark-Quant-Ladder)** | Quant ladder + a long thinking-on chat figure. Closer to real use than keys |
+| **[r0b0tlab](https://github.com/r0b0tlab/qwen38-27b-nvfp4-sm121-sglang)** | SGLang overlay + `Qwen3.8-27B-NVFP4-MTP-sm121` body that actually serves DFlash2 here |
+| **[z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2)** | Block-diffusion drafter. Lossless verify. House coding path |
 
 Where my numbers differ from theirs, that is tool / prompt / thinking / image —
 not a claim that they are wrong.
@@ -115,9 +123,9 @@ I replayed keys' completions bench (temp 0, thinking off, decode-only) so I woul
 know what 32 is. I got **26.4** at k=2 and **32.1** at k=3 — their method, this box.
 That is not Hermes live. I do not use it as the daily claim.
 
-**Usable, thinking on, unconstrained stream:** 16.7–24.1 (DSpark) · 17.9–19.6 (MTP).
+**Usable, thinking on, unconstrained stream:** **24.6–30.5** (DFlash2 0.70) · 16.7–24.1 (DSpark) · 17.9–19.6 (MTP).
 **Usable, thinking on, brief + structured edit:** **44–72** (DSpark k=14).
-**Coding-solo, thinking off, edit-heavy:** **75–78**.
+**Coding-solo, thinking off, edit-heavy:** **75–78** (DSpark, not the daily coding switcher).
 
 Wesche's **23.7 thinking-on** sits on the unconstrained path. I replayed a
 4096-token xhigh coding stream on MTP: **17.2 tok/s**. DSpark 4096 think-on:
@@ -125,18 +133,28 @@ Wesche's **23.7 thinking-on** sits on the unconstrained path. I replayed a
 
 ---
 
-## Coding-solo recipe (DSpark k=14, 2026-08-17)
+## House coding — DFlash2 0.70 (2026-08-19)
+
+TRELLIS **off**. Same Hermes id `qwen3.8-27b-sglang`. Overlay, not the 38G campaign digest.
+
+```bash
+MEM_FRACTION=0.70 MAX_CONCURRENT_REQUESTS=8 ./scripts/dflash2-house.sh
+```
+
+Laptop: Start-Day `[2]` / `03-models/qwen38-sglang/2-Coding.bat`.
+3D: Start-Day `[4]` house SGLang 0.55 + `trellis2`. Do not pair DFlash2 with TRELLIS.
+
+## Edit-heavy coding-solo — DSpark k=14 (2026-08-17)
 
 Voice off. Do not run this next to ASR/TTS — 0.85 wants ~103 GiB free.
 
 ```bash
-# scripts/boot-bakeer-dspark.sh
-# Unsloth NVFP4 + Doopeworld DSpark, Bakeer flags, house image
 export GMU=0.85 K=14
 ./scripts/boot-bakeer-dspark.sh
 ```
 
-Laptop switcher: `03-models/qwen38-sglang/4-vLLM-Coding.bat` → Hermes `unsloth27b`.
+Laptop: `03-models/unsloth27b/Switch-to-Unsloth27B-Coding-Solo.bat` → Hermes `unsloth27b`.
+Not in Start-Day 1–4.
 
 ## Live-talk recipe (MTP k=2, voice on)
 
